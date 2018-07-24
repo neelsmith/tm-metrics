@@ -6,6 +6,10 @@ import java.io.PrintWriter
 // giving citation reference and text contents
 val f = "data/hdt-mashup.tsv"
 
+
+// structure for recording number of words in a passage
+case class ChunkCount(passageID: String, numberWords: Int)
+
 // recursively allocate words from wordList in chunks
 // defined by sizesList.  Accumulate them in results
 // until done.
@@ -18,6 +22,8 @@ def allocateWords (sizesList: Vector[Int], wordList: Vector[String], results:  V
   }
 }
 
+
+
 // Read data from srcName, generate iterations randomly
 // reshuffled texts chunked to the same size units as srcName,
 // and write results to files named outputName-N.txt
@@ -25,15 +31,20 @@ def randomize(outputName: String, iterations: Int =  10, srcName: String = f) : 
   val lines = Source.fromFile(srcName).getLines.toVector
   val chunkSizes = for (ln <- lines) yield {
     val columns = ln.split("\t")
-    columns(1).split(" ").size
+    val wordCount = columns(1).split(" ").size
+    ChunkCount(columns(0), wordCount)
   }
   // shuffle up all words in the text
-  val allWords = lines.map(_.split(" ")).flatten.filter(_.nonEmpty)
+  val allWords = lines.map( _.split(" ")).flatten.filter(_.nonEmpty)
 
   for (i <- 0 until iterations) {
     val randomWords = scala.util.Random.shuffle(allWords)
-    val randomizedChunks = allocateWords(chunkSizes,randomWords, Vector.empty[String])
-    new java.io.PrintWriter(s"randomized/${outputName}-${i}.txt"){write(randomizedChunks.mkString("\n")); close;}
+    val randomizedChunks = allocateWords(chunkSizes.map(_.numberWords),randomWords, Vector.empty[String])
+
+    // zip citations together with new random chunks:
+    val citedRandom = chunkSizes.map(_.passageID) zip randomizedChunks
+    val citedRandomString = citedRandom.map{ case (id,txt) => s"${id}\t${txt}"}
+    new java.io.PrintWriter(s"randomized/${outputName}-${i}.tsv"){write(citedRandomString.mkString("\n")); close;}
   }
 }
 
