@@ -4,7 +4,7 @@ import java.io.PrintWriter
 // Default input:
 // a two-column, tab-delimited file,
 // giving citation reference and text contents
-val f = "data/hdt-mashup.tsv"
+val f = "data/hdt-english.tsv"
 
 
 // structure for recording number of words in a passage
