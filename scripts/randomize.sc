@@ -1,6 +1,7 @@
 import scala.io.Source
 import java.io.PrintWriter
 
+// Default input:
 // a two-column, tab-delimited file,
 // giving citation reference and text contents
 val f = "data/hdt-mashup.tsv"
